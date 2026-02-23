@@ -1,5 +1,6 @@
 import { Inngest } from "inngest";
 import User from "../models/User.js";
+
 export const inngest = new Inngest({ id: "movie-ticket-vooking" });
 
 const syncUserCreation = inngest.createFunction(
@@ -7,39 +8,42 @@ const syncUserCreation = inngest.createFunction(
   { event: "clerk/user.created" },
   async ({ event }) => {
     const { id, first_name, last_name, email_addresses, image_url } =
-      event.data;
+      event.data || {};
     const userData = {
       _id: id,
-      email: email_addresses[0].email_address,
-      name: first_name + " " + last_name,
+      email: email_addresses?.[0]?.email_address,
+      name: `${first_name || ""} ${last_name || ""}`.trim(),
       image: image_url,
     };
-    awaitUser.create(userData);
-  },
+    await User.create(userData);
+  }
 );
+
 const syncUserDeletion = inngest.createFunction(
-  { id: "delete-user-with-clerk " },
-  { event: "clerk/user.deleted " },
+  { id: "delete-user-with-clerk" },
+  { event: "clerk/user.deleted" },
   async ({ event }) => {
-    const { id } = event.data;
-    await User.findByIdAndDelete(id);
-  },
+    const { id } = event.data || {};
+    if (id) await User.findByIdAndDelete(id);
+  }
 );
+
 const syncUserUpdation = inngest.createFunction(
-  { id: "update-user-from-clerk " },
-  { event: "clerk/user.deleted " },
+  { id: "update-user-from-clerk" },
+  { event: "clerk/user.updated" },
   async ({ event }) => {
     const { id, first_name, last_name, email_addresses, image_url } =
-      event.data;
+      event.data || {};
+    if (!id) return;
     const userData = {
       _id: id,
-      email: email_addresses[0].email_address,
-      name: first_name + " " + last_name,
+      email: email_addresses?.[0]?.email_address,
+      name: `${first_name || ""} ${last_name || ""}`.trim(),
       image: image_url,
     };
 
-    await User.findByIdAndUpdate(id, userData);
-  },
+    await User.findByIdAndUpdate(id, userData, { upsert: true });
+  }
 );
 
 export const functions = [syncUserCreation, syncUserDeletion, syncUserUpdation];
