@@ -12,7 +12,7 @@ const AdminSidebar = () => {
 
     const adminNavlinks = [
         {name:'Dashbord', path: '/admin', icon:LayoutDashboardIcon},
-        {name:'Add Shows', path: '/admin/add-shows', icon:PlusSquareIcon},
+        {name:'Add Shows', path: '/admin/add-show', icon:PlusSquareIcon},
         {name:'List Shows', path: '/admin/list-shows', icon:ListIcon},
         {name:'List Bookings', path: '/admin/list-bookings', icon:ListCollapseIcon},
     ]
@@ -37,5 +37,4 @@ const AdminSidebar = () => {
     </div>
   )
 }
-
 export default AdminSidebar
