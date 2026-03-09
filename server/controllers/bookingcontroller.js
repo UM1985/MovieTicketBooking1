@@ -4,14 +4,19 @@ import Show from "../models/Show.js";
 //functions to check avalibility of seats and to book the seats for a particular show
 
 const checkSeatAvailability = async (showId, selectedSeats) => {
-  const showData = await Show.findById(showId);
-  const occupiedSeats = showData.occupiedSeats;
+  try {
+    const showData = await Show.findById(showId);
+    if (!showData) return false;
 
-  const isAnySeatTaken = selectedSeats.some(
-    (seat) => occupiedSeats[seat]
-  );
+    const occupiedSeats = showData.occupiedSeats;
 
-  return !isAnySeatTaken;
+    const isAnySeatTaken = selectedSeats.some((seat) => occupiedSeats[seat]);
+
+    return !isAnySeatTaken;
+  } catch (error) {
+    console.log(error.message);
+    return false;
+  }
 };
 
 export const createBooking = async (req, res) => {
@@ -40,12 +45,12 @@ export const createBooking = async (req, res) => {
       bookedSeats: selectedSeats,
     });
 
- selectedSeats.forEach((seat) => {
-  showData.occupiedSeats[seat] = userId;
-});
+    selectedSeats.map((seat)=> {
+        showData.occupiedSeats[seat] = userId;
+    })
     showData.markModified("occupiedSeats");
     await showData.save();
-    res.json({ success: true, message: "Booking created successfully" },booking);
+    res.json({ success: true, message: "Booking created successfully" });
   } catch (error) {
 
     console.log(error.message); 
@@ -56,19 +61,15 @@ export const createBooking = async (req, res) => {
 
 export const getOccupiedSeats = async (req, res) => {
   try {
-    const { showId } = req.params;
-
+    
+    const {showId} = req.params;
     const showData = await Show.findById(showId);
-
-    const occupiedSeats = Object.keys(showData.occupiedSeats || {});
-
-    res.json({
-      success: true,
-      occupiedSeats
-    });
-
+    const occupiedSeats = Object.keys(showData.occupiedSeats)
+    console.log("utkarsh",occupiedSeats)
+    res.json({ success: true, occupiedSeats });
   } catch (error) {
-    console.log(error.message);
-    res.json({ success:false, message:error.message });
+     console.log(error.message); 
+    res.json({ success: false, message: error.message });
+
   }
-};
+}
