@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { assets, dummyDateTimeData, dummyShowsData } from "../assets/assets";
+import { assets } from "../assets/assets";
 import Loading from "../components/Loading";
 import { ArrowRightIcon, ClockIcon } from "lucide-react";
 import isoTimeFormate from "../lib/isoTimeFormat";
@@ -87,7 +87,6 @@ const SeatLayout = () => {
 
 
     const { data } = await axios.get(`/api/booking/seats/${selectedTime.showId}`)
-    console.log("occupied response:", data)
 
     if (data.success) {
       setOccupiedSeats(data.occupiedSeats || [])
@@ -106,8 +105,8 @@ const SeatLayout = () => {
         if(!selectedTime || !selectedSeats.length) return toast.error("please Select a time and Seats")
           const {data} = await axios.post('/api/booking/create', {showId:selectedTime.showId , selectedSeats} , {headers:{Authorization:`Bearer ${await getToken()}`}} );
         if(data.success){
-          toast.success(data.message);
-          navigate('/my-bookings');
+          windows.location.href = data.url;
+          
         }else{
           toast.error(data.message)
         }
